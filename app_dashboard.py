@@ -24,8 +24,9 @@ HEX_SUCCESS_TEAL = "#2A9D8F"
 HEX_ALERT_RED = "#D90429"
 HEX_BG_LIGHT = "#F4F6F8"
 
+# Enlaces directos predeterminados del proyecto ESMETEL
 URL_SHEETS_CSV_DEFAULT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStnyYfi0vFkc202Y9nviwH1WAOVjB4ol1DiVlngVqvYMN8DSg5yO0eV7CtK1rz9g-Sp5rBJxqBCC-i/pub?gid=862398109&single=true&output=csv"
-URL_SHEETS_CSV_DEFAULT = ""
+URL_FORMS_DEFAULT = "https://forms.gle/GVsfzb8w9zd3U7FR7"
 
 st.markdown(f"""
 <style>
@@ -60,12 +61,14 @@ st.markdown(f"""
 # ---------------------------------------------------------
 # FUNCIONES DE CARGA DE DATOS Y GENERACIÓN DE PDF
 # ---------------------------------------------------------
-@st.cache_data(ttl=10) # Refresco automático de Google Sheets cada 10 segundos
+@st.cache_data(ttl=5) # Refresco automático del CSV en vivo cada 5 segundos
 def cargar_datos_google_sheets(url_csv):
     if not url_csv:
         return pd.DataFrame(), False
     try:
         df = pd.read_csv(url_csv)
+        # Limpieza flexible de encabezados de columnas de Google Forms
+        df.columns = df.columns.str.strip()
         return df, True
     except Exception:
         return pd.DataFrame(), False
@@ -173,8 +176,12 @@ with st.sidebar:
     equipo_sel = st.selectbox("Unidad MIG:", ["Planta General (EQ-01, EQ-02, EQ-03)", "EQ-01", "EQ-02", "EQ-03"])
     
     st.divider()
+    st.markdown("### Captura en Campo")
+    st.link_button("📋 Abrir Google Form (QR)", URL_FORMS_DEFAULT, use_container_width=True)
+    
+    st.divider()
     st.markdown("### Conexión Google Sheets")
-    url_sheets = st.text_input("URL Enlace CSV Publicado:", value=URL_SHEETS_CSV_DEFAULT, help="Pega aquí la URL publicada (.csv) de tu hoja de Google Sheets.")
+    url_sheets = st.text_input("URL CSV Publicada:", value=URL_SHEETS_CSV_DEFAULT, help="URL pública en formato CSV del Google Sheet vinculado al formulario.")
 
 st.markdown(f"""
 <div class="esmetel-banner">
@@ -286,13 +293,20 @@ elif menu_seleccion == "Análisis de Paradas":
 
 elif menu_seleccion == "Datos Campo (Google Sheets)":
     st.subheader("Monitoreo en Vivo de Inspecciones LUP-01")
-    st.write("Esta sección lee la hoja de Google Sheets vinculada a tus códigos QR de Google Forms.")
+    
+    col_info, col_link = st.columns([3, 1])
+    with col_info:
+        st.write("Esta sección lee automáticamente las respuestas enviadas desde el **Google Form** mediante el código QR de planta.")
+    with col_link:
+        st.link_button("📱 Abrir Formulario", URL_FORMS_DEFAULT, use_container_width=True)
+    
+    st.divider()
     
     if gs_conectado and not df_gs.empty:
-        st.success(f"Conexión exitosa con Google Sheets. Se han recibido **{len(df_gs)} registros** de inspección.")
+        st.success(f"✅ Conexión activa con Google Sheets. Se registran **{len(df_gs)} respuestas** en la nube.")
         st.dataframe(df_gs, use_container_width=True)
     else:
-        st.info("💡 **Instrucciones de Vinculación:**\n1. En tu hoja de Google Sheets, ve a **Archivo > Compartir > Publicar en la web**.\n2. Selecciona la hoja de respuestas y elije el formato **Valores separados por comas (.csv)**.\n3. Copia el enlace generado y pégalo en el campo **'URL Enlace CSV Publicado'** en la barra lateral izquierda.")
+        st.info("💡 La hoja de Google Sheets está conectada y a la espera de nuevos registros desde los celulares de los operarios.")
 
 elif menu_seleccion == "Plan & Reporte PDF":
     st.subheader("Plan de Acción Estratégico TPM / SMED")
