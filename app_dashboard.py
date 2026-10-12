@@ -24,7 +24,7 @@ HEX_SUCCESS_TEAL = "#2A9D8F"
 HEX_ALERT_RED = "#D90429"
 HEX_BG_LIGHT = "#F4F6F8"
 
-# Enlace CSV publicado de Google Sheets
+URL_SHEETS_CSV_DEFAULT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStnyYfi0vFkc202Y9nviwH1WAOVjB4ol1DiVlngVqvYMN8DSg5yO0eV7CtK1rz9g-Sp5rBJxqBCC-i/pub?gid=862398109&single=true&output=csv"
 URL_SHEETS_CSV_DEFAULT = ""
 
 st.markdown(f"""
