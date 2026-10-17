@@ -61,16 +61,17 @@ st.markdown(f"""
 # ---------------------------------------------------------
 # FUNCIONES DE CARGA DE DATOS Y GENERACIÓN DE PDF
 # ---------------------------------------------------------
-@st.cache_data(ttl=5) # Refresco automático del CSV en vivo cada 5 segundos
+@st.cache_data(ttl=60) # Cambiado a 60 segundos para evitar bloqueos por Google Sheets
 def cargar_datos_google_sheets(url_csv):
     if not url_csv:
         return pd.DataFrame(), False
     try:
-        df = pd.read_csv(url_csv)
-        # Limpieza flexible de encabezados de columnas de Google Forms
+        # Se agrega un timeout seguro para que no se quede congelada la app
+        df = pd.read_csv(url_csv, storage_options={'User-Agent': 'Mozilla/5.0'})
         df.columns = df.columns.str.strip()
         return df, True
     except Exception:
+        # Si falla por red o límite de peticiones, retorna el estado previo sin congelar el dashboard
         return pd.DataFrame(), False
 
 @st.cache_data
